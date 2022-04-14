@@ -143,6 +143,64 @@ class CloudAccountsAPI(SitePlannerCrudAPI):
         return read_response_location_header(response, error_class=SitePlannerClientError)
 
 
+class AzureSubscriptionsAPI(SitePlannerCrudAPI):
+    _endpoint_chain = 'virtualization.azuresubscriptions'
+
+    def get_by_name(self, name: str) -> Dict:
+        override_url = self._pynb_endpoint.url + f'/?name={name}'
+        logger.info(f'AzureSubscriptions name={name} override_url={override_url}')
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=override_url,
+        ).json()
+        count = resp.get('count', 0)
+        if count == 0:
+            return None
+        if count > 1:
+            raise SitePlannerClientError(f'Too many matches on name: {name}')
+        results = resp.get('results', None)
+        if results is None:
+            return None
+        obj = results[0]
+        return self._record_to_dict(obj)
+
+    def build(self, id: str) -> str:
+        response = self._make_direct_http_call(
+            verb='post',
+            override_url=self._pynb_endpoint.url + f'/{id}/build/',
+            data={}
+        )
+        return read_response_location_header(response, error_class=SitePlannerClientError)
+
+    def teardown(self, id: str) -> str:
+        response = self._make_direct_http_call(
+            verb='post',
+            override_url=self._pynb_endpoint.url + f'/{id}/teardown/',
+            data={}
+        )
+        return read_response_location_header(response, error_class=SitePlannerClientError)
+    
+
+class AzureLocationsAPI(SitePlannerCrudAPI):
+    _endpoint_chain = 'virtualization.azurelocations'
+
+    def get_by_name(self, name: str) -> Dict:
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=self._pynb_endpoint.url + f'/?name={name}',
+        ).json()
+        count = resp.get('count', 0)
+        if count == 0:
+            return None
+        if count > 1:
+            raise SitePlannerClientError(f'Too many matches on name: {name}')
+        results = resp.get('results', None)
+        if results is None:
+            return None
+        obj = results[0]
+        return self._record_to_dict(obj)
+
+    
 class VPCsAPI(SitePlannerCrudAPI):
     _endpoint_chain = 'virtualization.vpcs'
 
@@ -200,6 +258,197 @@ class VPCsAPI(SitePlannerCrudAPI):
         return read_response_location_header(response, error_class=SitePlannerClientError)
 
 
+class VNetsAPI(SitePlannerCrudAPI):
+    _endpoint_chain = 'virtualization.vnets'
+
+    def get_by_name(self, name: str) -> Dict:
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=self._pynb_endpoint.url + f'/?name={name}',
+        ).json()
+        count = resp.get('count', 0)
+        if count == 0:
+            return None
+        if count > 1:
+            raise SitePlannerClientError(f'Too many matches on name: {name}')
+        results = resp.get('results', None)
+        if results is None:
+            return None
+        obj = results[0]
+        return self._record_to_dict(obj)
+
+    def get_by_subscription_id(self, id: str) -> List:
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=self._pynb_endpoint.url + f'/?azure_subscription_id={id}',
+        ).json()
+        return [self._record_to_dict(r) for r in resp.get('results', [])]
+
+    def get_by_configured_vnet_id(self, id: str) -> List:
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=self._pynb_endpoint.url + f'/?configured_vnet_id={id}',
+        ).json()
+        return [self._record_to_dict(r) for r in resp.get('results', [])]
+
+    def get_by_cloud_provider_vnet_id(self, id: str) -> List:
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=self._pynb_endpoint.url + f'/?cloud_provider_vnet_id={id}',
+        ).json()
+        return [self._record_to_dict(r) for r in resp.get('results', [])]
+
+    def build(self, id: str) -> str:
+        response = self._make_direct_http_call(
+            verb='post',
+            override_url=self._pynb_endpoint.url + f'/{id}/build/',
+            data={}
+        )
+        return read_response_location_header(response, error_class=SitePlannerClientError)
+
+    def teardown(self, id: str) -> str:
+        response = self._make_direct_http_call(
+            verb='post',
+            override_url=self._pynb_endpoint.url + f'/{id}/teardown/',
+            data={}
+        )
+        return read_response_location_header(response, error_class=SitePlannerClientError)
+    
+    
+class AWSRegionsAPI(SitePlannerCrudAPI):
+    _endpoint_chain = 'virtualization.awsregions'
+    
+    def get_by_regionid(self, regionid: str) -> Dict:
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=self._pynb_endpoint.url + f'/?regionid={regionid}',
+        ).json()
+        count = resp.get('count', 0)
+        if count == 0:
+            return None
+        if count > 1:
+            raise SitePlannerClientError(f'Too many matches on regionid: {regionid}')
+        results = resp.get('results', None)
+        if results is None:
+            return None
+        obj = results[0]
+        return self._record_to_dict(obj)
+
+    def get_by_name(self, name: str) -> Dict:
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=self._pynb_endpoint.url + f'/?name={name}',
+        ).json()
+        count = resp.get('count', 0)
+        if count == 0:
+            return None
+        if count > 1:
+            raise SitePlannerClientError(f'Too many matches on name: {name}')
+        results = resp.get('results', None)
+        if results is None:
+            return None
+        obj = results[0]
+        return self._record_to_dict(obj)
+
+class AWSTGWsAPI(SitePlannerCrudAPI):
+    _endpoint_chain = 'virtualization.awstgws'
+
+    def get_by_name(self, name: str) -> Dict:
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=self._pynb_endpoint.url + f'/?name={name}',
+        ).json()
+        count = resp.get('count', 0)
+        if count == 0:
+            return None
+        if count > 1:
+            raise SitePlannerClientError(f'Too many matches on name: {name}')
+        results = resp.get('results', None)
+        if results is None:
+            return None
+        obj = results[0]
+        return self._record_to_dict(obj)
+
+    def get_by_awsregion(self, id: str) -> List:
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=self._pynb_endpoint.url + f'/?awsregion={id}',
+        ).json()
+        return [self._record_to_dict(r) for r in resp.get('results', [])]
+
+    def get_by_awsaccount_id(self, id: str) -> List:
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=self._pynb_endpoint.url + f'/?awsaccount={id}',
+        ).json()
+        return [self._record_to_dict(r) for r in resp.get('results', [])]
+
+    def build(self, id: str) -> str:
+        response = self._make_direct_http_call(
+            verb='post',
+            override_url=self._pynb_endpoint.url + f'/{id}/build/',
+            data={}
+        )
+        return read_response_location_header(response, error_class=SitePlannerClientError)
+
+    def teardown(self, id: str) -> str:
+        response = self._make_direct_http_call(
+            verb='post',
+            override_url=self._pynb_endpoint.url + f'/{id}/teardown/',
+            data={}
+        )
+        return read_response_location_header(response, error_class=SitePlannerClientError)
+
+class AWSTGWPeeringsAPI(SitePlannerCrudAPI):
+    _endpoint_chain = 'virtualization.awstgwpeerings'
+
+    def get_by_name(self, name: str) -> Dict:
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=self._pynb_endpoint.url + f'/?name={name}',
+        ).json()
+        count = resp.get('count', 0)
+        if count == 0:
+            return None
+        if count > 1:
+            raise SitePlannerClientError(f'Too many matches on name: {name}')
+        results = resp.get('results', None)
+        if results is None:
+            return None
+        obj = results[0]
+        return self._record_to_dict(obj)
+
+    def get_by_targettgw_id(self, id: str) -> List:
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=self._pynb_endpoint.url + f'/?target_tgw={id}',
+        ).json()
+        return [self._record_to_dict(r) for r in resp.get('results', [])]
+
+    def get_by_sourcetgw_id(self, id: str) -> List:
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=self._pynb_endpoint.url + f'/?source_tgw={id}',
+        ).json()
+        return [self._record_to_dict(r) for r in resp.get('results', [])]
+
+    def build(self, id: str) -> str:
+        response = self._make_direct_http_call(
+            verb='post',
+            override_url=self._pynb_endpoint.url + f'/{id}/build/',
+            data={}
+        )
+        return read_response_location_header(response, error_class=SitePlannerClientError)
+
+    def teardown(self, id: str) -> str:
+        response = self._make_direct_http_call(
+            verb='post',
+            override_url=self._pynb_endpoint.url + f'/{id}/teardown/',
+            data={}
+        )
+        return read_response_location_header(response, error_class=SitePlannerClientError)
+    
+    
 class VirtualizationGroup(SitePlannerAPIGroup):
 
     @property
@@ -233,3 +482,28 @@ class VirtualizationGroup(SitePlannerAPIGroup):
     @property
     def vpcs(self):
         return VPCsAPI(self._sp_client)
+    
+    @property
+    def azure_subscriptions(self):
+        return AzureSubscriptionsAPI(self._sp_client)  
+    
+    @property
+    def azure_locations(self):
+        return AzureLocationsAPI(self._sp_client)    
+
+    @property
+    def vnets(self):
+        return VNetsAPI(self._sp_client)
+    
+    @property
+    def awsregions(self):
+        return AWSRegionsAPI(self._sp_client)
+
+    @property
+    def awstgws(self):
+        return AWSTGWsAPI(self._sp_client)
+
+    @property
+    def awstgwpeerings(self):
+        return AWSTGWPeeringsAPI(self._sp_client)
+    

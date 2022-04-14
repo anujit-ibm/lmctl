@@ -128,6 +128,42 @@ class SubnetsAPI(SitePlannerCrudAPI):
             return None
         obj = results[0]
         return self._record_to_dict(obj)
+    
+    
+class AzureSubnetsAPI(SitePlannerCrudAPI):
+    _endpoint_chain = 'ipam.azuresubnets'
+
+    def get_by_name(self, name: str) -> Dict:
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=self._pynb_endpoint.url + f'/?name={name}',
+        ).json()
+        count = resp.get('count', 0)
+        if count == 0:
+            return None
+        if count > 1:
+            raise SitePlannerClientError(f'Too many matches on name: {name}')
+        results = resp.get('results', None)
+        if results is None:
+            return None
+        obj = results[0]
+        return self._record_to_dict(obj)
+
+    def get_by_cidr(self, cidr: str) -> Dict:
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=self._pynb_endpoint.url + f'/?cidr={cidr}',
+        ).json()
+        count = resp.get('count', 0)
+        if count == 0:
+            return None
+        if count > 1:
+            raise SitePlannerClientError(f'Too many matches on cidr: {cidr}')
+        results = resp.get('results', None)
+        if results is None:
+            return None
+        obj = results[0]
+        return self._record_to_dict(obj)
 
 
 class IPAMGroup(SitePlannerAPIGroup):
@@ -171,7 +207,11 @@ class IPAMGroup(SitePlannerAPIGroup):
     @property
     def subnets(self):
         return SubnetsAPI(self._sp_client)
-
+    
+    @property
+    def azuresubnets(self):
+        return AzureSubnetsAPI(self._sp_client)
+    
     @property
     def subnet_roles(self):
         return SubnetRolesAPI(self._sp_client)
