@@ -114,3 +114,41 @@ test_workspace/
 
 # Test properties
 local_test_properties.yaml
+
+
+*.tgz
+
+######################
+# Eclipse
+######################
+*.pydevproject
+.project
+**/.settings/**
+
+######################
+# Intellij
+######################
+**/.idea/**
+*.iml
+*.iws
+*.ipr
+*.ids
+*.orig
+
+######################
+# Windows
+######################
+# Windows image file caches
+Thumbs.db
+
+# Folder config file
+Desktop.ini
+
+######################
+# Mac OSX
+######################
+.DS_Store
+.svn
+
+# Thumbnails
+._*

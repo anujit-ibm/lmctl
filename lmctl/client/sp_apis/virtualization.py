@@ -125,6 +125,23 @@ class CloudAccountsAPI(SitePlannerCrudAPI):
             return None
         obj = results[0]
         return self._record_to_dict(obj)
+    
+    def get_by_accesskeyid(self, accesskeyid: str) -> Dict:
+        override_url = self._pynb_endpoint.url + f'/?accesskeyid={accesskeyid}'
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=override_url,
+        ).json()
+        count = resp.get('count', 0)
+        if count == 0:
+            return None
+        if count > 1:
+            raise SitePlannerClientError(f'Too many matches on accesskeyid: {accesskeyid}')
+        results = resp.get('results', None)
+        if results is None:
+            return None
+        obj = results[0]
+        return self._record_to_dict(obj)
 
     def build(self, id: str) -> str:
         response = self._make_direct_http_call(
