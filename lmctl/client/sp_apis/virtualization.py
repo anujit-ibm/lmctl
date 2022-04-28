@@ -110,7 +110,6 @@ class CloudAccountsAPI(SitePlannerCrudAPI):
 
     def get_by_name(self, name: str) -> Dict:
         override_url = self._pynb_endpoint.url + f'/?name={name}'
-        logger.info(f'CloudAccounts name={name} override_url={override_url}')
         resp = self._make_direct_http_call(
             verb='get',
             override_url=override_url,
@@ -165,7 +164,6 @@ class AzureSubscriptionsAPI(SitePlannerCrudAPI):
 
     def get_by_name(self, name: str) -> Dict:
         override_url = self._pynb_endpoint.url + f'/?name={name}'
-        logger.info(f'AzureSubscriptions name={name} override_url={override_url}')
         resp = self._make_direct_http_call(
             verb='get',
             override_url=override_url,
@@ -175,6 +173,23 @@ class AzureSubscriptionsAPI(SitePlannerCrudAPI):
             return None
         if count > 1:
             raise SitePlannerClientError(f'Too many matches on name: {name}')
+        results = resp.get('results', None)
+        if results is None:
+            return None
+        obj = results[0]
+        return self._record_to_dict(obj)
+    
+    def get_by_subscription(self, subscription: str) -> Dict:
+        override_url = self._pynb_endpoint.url + f'/?subscription={subscription}'
+        resp = self._make_direct_http_call(
+            verb='get',
+            override_url=override_url,
+        ).json()
+        count = resp.get('count', 0)
+        if count == 0:
+            return None
+        if count > 1:
+            raise SitePlannerClientError(f'Too many matches on subscription: {subscription}')
         results = resp.get('results', None)
         if results is None:
             return None
