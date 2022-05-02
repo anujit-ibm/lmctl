@@ -45,7 +45,9 @@ class TNCOClient:
     def _curr_session(self):
         if self.use_sessions:
             if self._session is None:
-                self._session = requests.Session()
+                sess = requests.Session()
+                sess.options(timeout=26000)
+                self._session = sess
             return self._session
         else:
             return requests
@@ -99,7 +101,8 @@ class TNCOClient:
         self._supplement_headers(headers=request_kwargs['headers'], inject_current_auth=request.inject_current_auth) 
 
         try:
-            response = self._curr_session().request(method=request.method, url=url, verify=False, **request_kwargs)
+            logger.debug(f'lmctl making cp4na call now')
+            response = self._curr_session().request(method=request.method, url=url, verify=False,  **request_kwargs)
         except requests.RequestException as e:
             raise TNCOClientError(str(e)) from e
         logger.debug(f'CP4NA orchestration request has returned: Method={request.method}, URL={url}, Response={response}')
